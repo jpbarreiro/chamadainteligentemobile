@@ -1,5 +1,4 @@
 import 'package:chamadainteligentemobile/widgets/custom_app_bar.dart';
-// import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../routes/app_routes.dart';
@@ -13,6 +12,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  DateTime? choosenDate;
+  String? choosenDateInString;
+
   Widget customCard(String label) {
     return SizedBox(
       width: MediaQuery.of(context).size.width,
@@ -23,12 +25,62 @@ class _HomePageState extends State<HomePage> {
           child: Text(
             label,
             textAlign: TextAlign.center,
-            style: TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20
+            ),
           ),
         ),
       ),
     );
+  }
+
+  Widget customDateButton(){
+    return ElevatedButton.icon(
+      style: ElevatedButton.styleFrom(
+        elevation: 0.0,
+        padding: const EdgeInsets.all(8),
+        backgroundColor: Colors.white,
+        side: const BorderSide(
+          color: Colors.indigo,
+          width: 1.0,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(5),
+        ),
+      ),
+      onPressed: () async {
+        final datePick = await showDatePicker(
+          context: context,
+          locale: const Locale('pt', 'BR'),
+          initialDate: choosenDate ?? DateTime.now(),
+          firstDate: DateTime.utc(2023),
+          lastDate: DateTime(2100),
+        );
+        if(datePick!=null){
+          setState(() {
+            choosenDate = datePick;
+            choosenDateInString = "${choosenDate!.day}/${choosenDate!.month}/${choosenDate!.year}";
+          });
+        }
+      },
+      icon: const Icon(Icons.edit_calendar_outlined, color: Colors.indigo, size: 30,),
+      label: Text(
+        choosenDateInString!,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+            color: Colors.indigo,
+            fontSize: 17,
+            fontWeight: FontWeight.w400
+        ),
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    choosenDate = DateTime.now();
+    choosenDateInString = "${choosenDate!.day}/${choosenDate!.month}/${choosenDate!.year}";
+    super.initState();
   }
 
   @override
@@ -70,6 +122,27 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
+        ),
+      ),
+      body: Center(
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.only(top: MediaQuery.of(context).size.height/10),
+              child: customDateButton(),
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: MediaQuery.of(context).size.height/4),
+              child: Text(
+                'Nenhuma chamada no dia $choosenDateInString',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
