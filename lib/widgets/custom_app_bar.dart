@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 
-import 'logo.dart';
+//import 'logo.dart';
 
-class CustomAppBar{
+class CustomAppBar {
   late dynamic appBar;
-  CustomAppBar(){
+  CustomAppBar() {
     appBar = AppBar(
-
       centerTitle: true,
       backgroundColor: Colors.indigo,
       title: Text('Chamadas'),

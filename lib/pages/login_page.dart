@@ -10,9 +10,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-
-  Widget credentialForm(String artigo, String formulario){
+  Widget credentialForm(String artigo, String formulario, {bool? obscure}) { // permite NULL
     return TextFormField(
+      obscureText: obscure ?? false, // parametro esconder senha, ternário simplicado
       cursorColor: Colors.indigo,
       style: const TextStyle(
         fontSize: 20,
@@ -28,15 +28,18 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget loginButton(){
+  Widget loginButton() {
     return ElevatedButton.icon(
-      onPressed: (){
+      onPressed: () {
         Navigator.pushNamed(context, Routes.home);
       },
       icon: Icon(Icons.login),
       label: const Padding(
         padding: EdgeInsets.all(16),
-        child: Text('Entrar', style: TextStyle(fontSize: 20),),
+        child: Text(
+          'Entrar',
+          style: TextStyle(fontSize: 20),
+        ),
       ),
       style: ElevatedButton.styleFrom(
         elevation: 0.0,
@@ -44,7 +47,6 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -58,17 +60,23 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Logo(size: alturaTela/5, inverted: true).logoIcon,
+              Logo(size: alturaTela / 5, inverted: true).logoIcon,
               Padding(
-                padding: EdgeInsets.only(top: alturaTela/10, right: larguraTela/5, left: larguraTela/5),
+                padding: EdgeInsets.only(
+                    top: alturaTela / 10,
+                    right: larguraTela / 5,
+                    left: larguraTela / 5),
                 child: credentialForm('o', 'Usuário'),
               ),
               Padding(
-                padding: EdgeInsets.only(top: alturaTela/30, right: larguraTela/5, left: larguraTela/5),
-                child: credentialForm('a', 'Senha'),
+                padding: EdgeInsets.only(
+                    top: alturaTela / 30,
+                    right: larguraTela / 5,
+                    left: larguraTela / 5),
+                child: credentialForm('a', 'Senha', obscure: true),
               ),
               Padding(
-                padding: EdgeInsets.only(top: alturaTela/20),
+                padding: EdgeInsets.only(top: alturaTela / 20),
                 child: loginButton(),
               )
             ],

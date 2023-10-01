@@ -1,5 +1,5 @@
 import 'package:chamadainteligentemobile/widgets/custom_app_bar.dart';
-import 'package:flutter/cupertino.dart';
+// import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../routes/app_routes.dart';
@@ -13,7 +13,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  Widget customCard(String label){
+  Widget customCard(String label) {
     return SizedBox(
       width: MediaQuery.of(context).size.width,
       child: Card(
@@ -24,15 +24,13 @@ class _HomePageState extends State<HomePage> {
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 20
-            ),
+                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
           ),
         ),
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,17 +46,20 @@ class _HomePageState extends State<HomePage> {
                 child: customCard('Minhas chamadas'),
               ),
               Padding(
-                padding: const EdgeInsets.only(bottom:70.0),
+                padding: const EdgeInsets.only(bottom: 70.0),
                 child: customCard('Minhas turmas'),
               ),
               ElevatedButton.icon(
-                onPressed: (){
+                onPressed: () {
                   Navigator.pushNamed(context, Routes.login);
                 },
                 icon: Icon(Icons.logout),
                 label: const Padding(
                   padding: EdgeInsets.all(10),
-                  child: Text('Sair', style: TextStyle(fontSize: 20),),
+                  child: Text(
+                    'Sair',
+                    style: TextStyle(fontSize: 20),
+                  ),
                 ),
                 style: ElevatedButton.styleFrom(
                   elevation: 0.0,
