@@ -1,6 +1,10 @@
+import 'dart:convert';
+
+import 'package:chamadainteligentemobile/services/chamadainteligente_api.dart';
 import 'package:flutter/material.dart';
 import '../routes/app_routes.dart';
 import '../widgets/logo.dart';
+import 'package:http/http.dart' as http;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -10,8 +14,12 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  Widget credentialForm(String artigo, String formulario, {bool? obscure}) { // permite NULL
+  TextEditingController user = TextEditingController();
+  TextEditingController password = TextEditingController();
+
+  Widget credentialForm(String artigo, String formulario, TextEditingController controller,{bool? obscure}) { // permite NULL
     return TextFormField(
+      controller: controller,
       obscureText: obscure ?? false, // parametro esconder senha, ternário simplicado
       cursorColor: Colors.indigo,
       style: const TextStyle(
@@ -28,10 +36,25 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  login() async {
+    var res = await http.post(
+      Uri(
+        scheme: ChamadaInteligenteAPI.scheme,
+        host: ChamadaInteligenteAPI.host,
+        path: '${ChamadaInteligenteAPI.path}/user',
+        port: ChamadaInteligenteAPI.port
+      ),
+      body: jsonEncode({"user": {"id": user.value.text, "password": password.value.text}}),
+      headers: {'Content-Type': 'application/json'}
+    );
+    return res.body;
+  }
+
   Widget loginButton() {
     return ElevatedButton.icon(
       onPressed: () {
-        Navigator.pushNamed(context, Routes.home);
+        login();
+        //Navigator.pushNamed(context, Routes.home);
       },
       icon: Icon(Icons.login),
       label: const Padding(
@@ -66,14 +89,14 @@ class _LoginPageState extends State<LoginPage> {
                     top: alturaTela / 10,
                     right: larguraTela / 5,
                     left: larguraTela / 5),
-                child: credentialForm('o', 'Usuário'),
+                child: credentialForm('o', 'Usuário', user),
               ),
               Padding(
                 padding: EdgeInsets.only(
                     top: alturaTela / 30,
                     right: larguraTela / 5,
                     left: larguraTela / 5),
-                child: credentialForm('a', 'Senha', obscure: true),
+                child: credentialForm('a', 'Senha', password, obscure: true),
               ),
               Padding(
                 padding: EdgeInsets.only(top: alturaTela / 20),
