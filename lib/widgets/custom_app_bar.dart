@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 
 class CustomAppBar {
   late dynamic appBar;
-  CustomAppBar() {
+  CustomAppBar(String title) {
     appBar = AppBar(
       centerTitle: true,
       backgroundColor: Colors.indigo,
-      title: Text('Chamadas'),
+      title: Text(title),
     );
   }
 }

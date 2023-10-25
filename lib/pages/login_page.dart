@@ -53,8 +53,8 @@ class _LoginPageState extends State<LoginPage> {
   Widget loginButton() {
     return ElevatedButton.icon(
       onPressed: () {
-        login();
-        //Navigator.pushNamed(context, Routes.home);
+        //login();
+        Navigator.pushNamed(context, Routes.home);
       },
       icon: Icon(Icons.login),
       label: const Padding(
