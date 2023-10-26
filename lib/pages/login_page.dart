@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:chamadainteligentemobile/services/chamadainteligente_api.dart';
 import 'package:flutter/material.dart';
+import '../models/user_model.dart';
 import '../routes/app_routes.dart';
 import '../widgets/logo.dart';
 import 'package:http/http.dart' as http;
@@ -47,14 +48,22 @@ class _LoginPageState extends State<LoginPage> {
       body: jsonEncode({"user": {"id": user.value.text, "password": password.value.text}}),
       headers: {'Content-Type': 'application/json'}
     );
-    return res.body;
+    if(mounted){
+      if(res.body == "User not found") {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Usuário não encontrado")));
+      } else if(res.body == "Wrong password") {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Senha incorreta")));
+      } else if (res.statusCode==200) {
+        AuthUser().login(jsonDecode(res.body));
+        Navigator.pushNamed(context, Routes.home);
+      }
+    }
   }
 
   Widget loginButton() {
     return ElevatedButton.icon(
       onPressed: () {
-        //login();
-        Navigator.pushNamed(context, Routes.home);
+        login();
       },
       icon: Icon(Icons.login),
       label: const Padding(

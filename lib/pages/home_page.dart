@@ -1,3 +1,4 @@
+import 'package:chamadainteligentemobile/models/user_model.dart';
 import 'package:chamadainteligentemobile/widgets/custom_app_bar.dart';
 import 'package:chamadainteligentemobile/widgets/custom_drawer.dart';
 import 'package:flutter/material.dart';
@@ -13,8 +14,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   DateTime? choosenDate;
   String? choosenDateInString;
-
-
 
   Widget customDateButton(){
     return ElevatedButton.icon(
@@ -80,7 +79,8 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: EdgeInsets.only(top: MediaQuery.of(context).size.height/4),
               child: Text(
-                'Nenhuma chamada no dia $choosenDateInString',
+                'Seja bem vindo ${AuthUser().userModel.name}',
+                //'Nenhuma chamada no dia $choosenDateInString',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 15,
