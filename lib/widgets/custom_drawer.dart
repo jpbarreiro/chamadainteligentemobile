@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/user_model.dart';
 import 'logo.dart';
 
 
@@ -26,6 +27,7 @@ class CustomDrawer {
               ),
               ElevatedButton.icon(
                 onPressed: () {
+                  AuthUser().logout();
                   if (actualPage == 'home'){
                     Navigator.pop(context);
                     Navigator.pop(context);

@@ -11,12 +11,18 @@ class AuthUser {
   void login(Map<String, dynamic> json) {
     userModel = UserModel(json);
   }
+
+  void logout(){
+    userModel.name = null;
+    userModel.id = null;
+    userModel.role = null;
+  }
 }
 
 class UserModel{
-  late String name;
-  late String id;
-  late String role;
+  late String? name;
+  late String? id;
+  late String? role;
 
   UserModel(Map<String, dynamic> json){
     id = json["id"];
