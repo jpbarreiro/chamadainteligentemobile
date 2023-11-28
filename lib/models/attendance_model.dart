@@ -10,6 +10,7 @@ import '../services/chamadainteligente_api.dart';
 class AttendanceModel{
   late int id;
   late int courseId;
+  late String classId;
   late String subjectName;
   late DateTime startTime;
   late DateTime endTime;
@@ -61,6 +62,7 @@ class AttendanceModel{
 
     for (CourseModel c in coursesList){
       if (c.id == courseId){
+        classId = c.courseId;
         subjectId = c.subjectId;
       }
     }

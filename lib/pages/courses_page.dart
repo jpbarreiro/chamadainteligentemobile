@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:chamadainteligentemobile/models/user_model.dart';
 import 'package:chamadainteligentemobile/models/course_model.dart';
+import 'package:chamadainteligentemobile/pages/teacher_course_page.dart';
 import 'package:chamadainteligentemobile/widgets/custom_app_bar.dart';
 import 'package:chamadainteligentemobile/widgets/custom_drawer.dart';
 import 'package:http/http.dart' as http;
@@ -38,6 +39,29 @@ class _CoursePageState extends State<CoursesPage> {
     return courseList;
   }
 
+  Future<List> getTeacherCourses() async {
+    List<List> courseList = [];
+    var res = await http.get(
+      Uri(
+          scheme: ChamadaInteligenteAPI.scheme,
+          host: ChamadaInteligenteAPI.host,
+          path: '${ChamadaInteligenteAPI.path}/courses',
+          port: ChamadaInteligenteAPI.port
+      ),
+    );
+
+    for (var turma in jsonDecode(res.body)) {
+      if(turma["teacher_id"] == AuthUser().userModel.id){
+        CourseModel course = CourseModel(turma);
+        String teacherName = await course.getTeacherName();
+        await course.getCourseName();
+        courseList.add([course, teacherName]);
+      }
+    }
+    return courseList;
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,7 +71,7 @@ class _CoursePageState extends State<CoursesPage> {
         child: Column(
          children: [
            FutureBuilder(
-              future: AuthUser().userModel.role == 'student' ? getTurmas() : null,
+              future: AuthUser().userModel.role == 'student' ? getTurmas() : getTeacherCourses(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   return Expanded(
@@ -71,9 +95,14 @@ class _CoursePageState extends State<CoursesPage> {
                                 ],
                               ),
                               onTap: () {
+                                AuthUser().userModel.role == 'student' ?
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(builder: (context) => CoursePage(courseModel: snapshot.data![index][0],)),
+                                ) :
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => TeacherCoursePage(courseModel: snapshot.data![index][0],)),
                                 );
                               },
                             ),

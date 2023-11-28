@@ -9,6 +9,7 @@ class StudentAttendance{
   late int attendanceId;
   late String comment;
   late String status;
+  late String studentId;
 
   setAttendanceStatus() async {
     var res = await http.post(
@@ -46,6 +47,7 @@ class StudentAttendance{
     attendanceId = json["attendance_id"];
     comment = json["comment"];
     status = json["status"];
+    studentId = json["student_id"];
   }
 
 }

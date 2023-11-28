@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:chamadainteligentemobile/models/attendance_model.dart';
 import 'package:chamadainteligentemobile/models/course_model.dart';
 import 'package:chamadainteligentemobile/models/user_model.dart';
+import 'package:chamadainteligentemobile/pages/attendance_page.dart';
 import 'package:chamadainteligentemobile/widgets/custom_app_bar.dart';
 import 'package:chamadainteligentemobile/widgets/custom_drawer.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import 'package:http/http.dart' as http;
 
 
 import '../services/chamadainteligente_api.dart';
+import 'course_page.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -30,7 +32,6 @@ class _HomePageState extends State<HomePage> {
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.hasData) {
           List<AttendanceModel> attendances = snapshot.data;
-          print(snapshot.data);
           Widget returnWidget;
           attendances.length != 0 ? returnWidget =
           ListView.builder(
@@ -313,7 +314,9 @@ class _HomePageState extends State<HomePage> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: GestureDetector(
-        onTap: (){confirmAttendance(attendance);},
+        onTap: (){AuthUser().userModel.role == 'teacher' ?
+          Navigator.push(context, MaterialPageRoute(builder: (context) => AttendancePage(attendance: attendance))) :
+          confirmAttendance(attendance);},
         child: Container(
           padding: const EdgeInsets.all(16.0),
           decoration: BoxDecoration(
@@ -338,6 +341,10 @@ class _HomePageState extends State<HomePage> {
               ),
               Text(
                 'Sala: ${attendance.classroom}',
+                style: const TextStyle(fontSize: 16.0),
+              ),
+              Text(
+                'Turma: ${attendance.classId}',
                 style: const TextStyle(fontSize: 16.0),
               ),
               attendance.status != null ?
