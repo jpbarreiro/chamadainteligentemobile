@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:chamadainteligentemobile/models/course_model.dart';
+import 'package:chamadainteligentemobile/models/student_attendance_model.dart';
+import 'package:chamadainteligentemobile/models/user_model.dart';
 import 'package:http/http.dart' as http;
 
 import '../services/chamadainteligente_api.dart';
@@ -14,6 +16,30 @@ class AttendanceModel{
   late String classroom;
   late double localizationX;
   late double localizationY;
+  String? status;
+
+  setStatus() async {
+    dynamic resAttendances = await http.get(
+        Uri(
+            scheme: ChamadaInteligenteAPI.scheme,
+            host: ChamadaInteligenteAPI.host,
+            path: '${ChamadaInteligenteAPI.path}/student_attendance/${AuthUser().userModel.id}',
+            port: ChamadaInteligenteAPI.port
+        ),
+        headers: {'Content-Type': 'application/json'}
+    );
+
+    for (var j in jsonDecode(resAttendances.body)){
+      StudentAttendance studentAttendance = StudentAttendance(j);
+      if (studentAttendance.attendanceId == id){
+        status = studentAttendance.status;
+        return;
+      }
+    }
+    StudentAttendance newStudentAttendance = StudentAttendance({"attendance_id": id, "status": 'f', "comment": 'Não justificado'});
+    status = 'f';
+    newStudentAttendance.setAttendanceStatus();
+  }
 
 
   getSubjectName() async {

@@ -26,26 +26,62 @@ class _HomePageState extends State<HomePage> {
 
   attendanceList(){
     return FutureBuilder(
-      future: getAttendances(),
+      future: AuthUser().userModel.role == 'teacher' ? getTeacherAttendances() : getAttendances(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.hasData) {
           List<AttendanceModel> attendances = snapshot.data;
-          return ListView.builder(
+          print(snapshot.data);
+          Widget returnWidget;
+          attendances.length != 0 ? returnWidget =
+          ListView.builder(
             itemCount: attendances.length,
             itemBuilder: (BuildContext context, int index) {
               return buildAttendanceContainer(
-                course: attendances[index].subjectName,
-                startTime: attendances[index].startTime,
-                endTime: attendances[index].endTime,
-                classroom: attendances[index].classroom.toString(),
+                attendance: attendances[index],
               );
             },
+          ) :
+          returnWidget = Center(
+            child: Text(
+              'Seja bem vindo ${AuthUser().userModel.name}\nNenhuma chamada no dia $choosenDateInString',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold
+              ),
+            ),
           );
+          return returnWidget;
         } else {
           return const Center(child: CircularProgressIndicator());
         }
       },
     );
+  }
+
+  getTeacherAttendances() async {
+    List<AttendanceModel> attendances = [];
+
+    final request = http.Request(
+      'GET',
+      Uri.parse('${ChamadaInteligenteAPI.scheme}://'
+          '${ChamadaInteligenteAPI.host}:'
+          '${ChamadaInteligenteAPI.port}/'
+          '${ChamadaInteligenteAPI.path}/attendance/${AuthUser().userModel.id}'),);
+    request.headers.addAll({'Content-Type': 'application/json'});
+    request.body = jsonEncode({
+      "teacher_id": AuthUser().userModel.id.toString(),
+      "day": DateTime(choosenDate!.year, choosenDate!.month, choosenDate!.day).toString(),
+    });
+    final response = await request.send();
+    final responseJson = await response.stream.bytesToString();
+
+    for (var j in jsonDecode(responseJson)){
+      AttendanceModel attendanceModel = AttendanceModel(j);
+      await attendanceModel.getSubjectName();
+      attendances.add(attendanceModel);
+    }
+    return attendances;
   }
 
   getAttendances() async {
@@ -63,20 +99,33 @@ class _HomePageState extends State<HomePage> {
     });
     final response = await request.send();
     final responseJson = await response.stream.bytesToString();
-    /*var res = await http.get(
-        Uri(
-            scheme: ChamadaInteligenteAPI.scheme,
-            host: ChamadaInteligenteAPI.host,
-            path: '${ChamadaInteligenteAPI.path}/attendance/${AuthUser().userModel.id}',
-            port: ChamadaInteligenteAPI.port
-        ),
-        headers: {'Content-Type': 'application/json',},
-    );*/
+
     for (var j in jsonDecode(responseJson)){
-      print(j);
       AttendanceModel attendanceModel = AttendanceModel(j);
       await attendanceModel.getSubjectName();
-      attendances.add(attendanceModel);
+      if (DateTime.now().year <= attendanceModel.startTime.year){
+        if (DateTime.now().month <= attendanceModel.startTime.month){
+          if (DateTime.now().day <= attendanceModel.startTime.day){
+            if (DateTime.now().hour < attendanceModel.startTime.hour){
+              attendanceModel.status = 'a';
+              attendances.add(attendanceModel);
+            } else {
+              await attendanceModel.setStatus();
+              attendances.add(attendanceModel);
+            }
+          } else {
+            await attendanceModel.setStatus();
+            attendances.add(attendanceModel);
+          }
+        } else {
+          await attendanceModel.setStatus();
+          attendances.add(attendanceModel);
+        }
+      } else {
+        await attendanceModel.setStatus();
+        attendances.add(attendanceModel);
+      }
+      print(attendanceModel.status);
     }
     return attendances;
   }
@@ -135,6 +184,8 @@ class _HomePageState extends State<HomePage> {
 
 
 
+
+
   Widget customDateButton(){
     return ElevatedButton.icon(
       style: ElevatedButton.styleFrom(
@@ -177,39 +228,128 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  getDistance(double locX, double locY) async {
+    Position studentPosition = await determinePosition();
+    double distanceInMeters = Geolocator.distanceBetween(studentPosition.latitude, studentPosition.longitude, locX, locY);
+    return distanceInMeters;
+  }
+
+  confirmAttendance(AttendanceModel attendance){
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Confirmar presença"),
+          content: const Text("Deseja confirmar presença na chamada?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () async {
+                DateTime today = DateTime.now();
+                if (attendance.startTime.day == today.day &&
+                    attendance.startTime.month == today.month &&
+                    attendance.startTime.year == today.year) {
+                  if (attendance.startTime.hour > today.hour){
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("A chamada ainda não começou")));
+                    Navigator.pop(context);
+                    return;
+                  } else if (attendance.endTime.hour < today.hour) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("A chamada já acabou")));
+                    Navigator.pop(context);
+                    return;
+                  } else {
+                    var teacherDistance = await getDistance(
+                        attendance.localizationX, attendance.localizationY);
+                    if (teacherDistance <= 7) {
+                      http.post(
+                          Uri(
+                              scheme: ChamadaInteligenteAPI.scheme,
+                              host: ChamadaInteligenteAPI.host,
+                              path:
+                                  '${ChamadaInteligenteAPI.path}/student_attendance',
+                              port: ChamadaInteligenteAPI.port),
+                          body: jsonEncode({
+                            "student_attendance": {
+                              "student_id": AuthUser().userModel.id,
+                              "attendance_id": attendance.id,
+                              "status": "p",
+                              "comment": "Presença confirmada",
+                            }
+                          }),
+                          headers: {'Content-Type': 'application/json'});
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text("Presença confirmada com sucesso")));
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content:
+                              Text("Você está muito longe da sala de aula")));
+                    }
+                    Navigator.pop(context);
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text("A chamada não é hoje")));
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text("Confirmar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget buildAttendanceContainer({
-    required String course,
-    required DateTime startTime,
-    required DateTime endTime,
-    required String classroom,
+    required AttendanceModel attendance,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10.0),
-        border: Border.all(color: Colors.indigo),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            course,
-            style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: GestureDetector(
+        onTap: (){confirmAttendance(attendance);},
+        child: Container(
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10.0),
+            border: Border.all(color: Colors.indigo),
           ),
-          const SizedBox(height: 8.0),
-          Text(
-            'Inicio: ${startTime.hour}:00',
-            style: const TextStyle(fontSize: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                attendance.subjectName,
+                style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8.0),
+              Text(
+                'Inicio: ${attendance.startTime.hour}:00',
+                style: const TextStyle(fontSize: 16.0),
+              ),
+              Text(
+                'Fim: ${attendance.endTime.hour}:00',
+                style: const TextStyle(fontSize: 16.0),
+              ),
+              Text(
+                'Sala: ${attendance.classroom}',
+                style: const TextStyle(fontSize: 16.0),
+              ),
+              attendance.status != null ?
+              Text(attendance.status == 'p' ? 'Status: Presente' : attendance.status == 'f' ? 'Status: Falta' : 'Status: Ainda não começou',
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: attendance.status == 'p' ? Colors.green : attendance.status == 'f' ? Colors.red : Colors.grey,
+                ),
+              ) : SizedBox.shrink(),
+            ],
           ),
-          Text(
-            'Fim: ${endTime.hour}:00',
-            style: const TextStyle(fontSize: 16.0),
-          ),
-          Text(
-            'Sala: $classroom',
-            style: const TextStyle(fontSize: 16.0),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -464,14 +604,7 @@ class _HomePageState extends State<HomePage> {
                 height: MediaQuery.of(context).size.height/1.5,
                 child: Padding(
                   padding: EdgeInsets.all(MediaQuery.of(context).size.height/50),
-                  child: attendanceList(),/*Text(
-                    'Seja bem vindo ${AuthUser().userModel.name}\nNenhuma chamada no dia $choosenDateInString',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold
-                    ),
-                  ),*/
+                  child: attendanceList(),
                 ),
               ),
             ],

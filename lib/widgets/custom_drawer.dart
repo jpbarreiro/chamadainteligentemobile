@@ -21,9 +21,9 @@ class CustomDrawer {
               ),
               Padding(
                 padding: const EdgeInsets.only(bottom: 70.0),
-                child: actualPage == "classes" ?
+                child: actualPage == "courses" ?
                 customCard('Minhas turmas', context) :
-                customCard('Minhas turmas', context, route: "/classes"),
+                customCard('Minhas turmas', context, route: "/courses"),
               ),
               ElevatedButton.icon(
                 onPressed: () {
