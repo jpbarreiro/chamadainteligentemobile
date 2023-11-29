@@ -37,7 +37,7 @@ class AttendanceModel{
         return;
       }
     }
-    StudentAttendance newStudentAttendance = StudentAttendance({"attendance_id": id, "status": 'f', "comment": 'Não justificado'});
+    StudentAttendance newStudentAttendance = StudentAttendance({"attendance_id": id, "status": 'f', "comment": 'Não justificado', "student_id": AuthUser().userModel.id});
     status = 'f';
     newStudentAttendance.setAttendanceStatus();
   }

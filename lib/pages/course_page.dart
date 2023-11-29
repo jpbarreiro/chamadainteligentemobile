@@ -77,6 +77,7 @@ class _ClassesPageState extends State<CoursePage> {
     for (var j in jsonDecode(res.body)){
       AttendanceModel attendanceModel = AttendanceModel(j);
       await attendanceModel.getSubjectName();
+      await attendanceModel.setStatus();
       attendanceList.add(attendanceModel);
     }
     return attendanceList;
@@ -167,6 +168,12 @@ class _ClassesPageState extends State<CoursePage> {
                                 children: [
                                   Text('Horário: ${snapshot.data![index].startTime.hour}:${snapshot.data![index].startTime.minute}0'),
                                   Text('Sala: ${snapshot.data![index].classroom}'),
+                                  Text(
+                                    'Status: ${snapshot.data![index].status == 'p' ? 'Presente' : 'Ausente'}',
+                                    style: TextStyle(
+                                      color: snapshot.data![index].status == 'p' ? Colors.green : Colors.red,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
