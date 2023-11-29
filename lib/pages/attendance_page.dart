@@ -62,7 +62,6 @@ class _AttendancePageState extends State<AttendancePage> {
         attendances.add(attendanceModel);
       }
     }
-    print(attendances);
     return attendances;
   }
 

@@ -126,7 +126,6 @@ class _HomePageState extends State<HomePage> {
         await attendanceModel.setStatus();
         attendances.add(attendanceModel);
       }
-      print(attendanceModel.status);
     }
     return attendances;
   }
@@ -231,6 +230,8 @@ class _HomePageState extends State<HomePage> {
 
   getDistance(double locX, double locY) async {
     Position studentPosition = await determinePosition();
+    print(studentPosition);
+    print(locX + locY);
     double distanceInMeters = Geolocator.distanceBetween(studentPosition.latitude, studentPosition.longitude, locX, locY);
     return distanceInMeters;
   }
@@ -268,7 +269,8 @@ class _HomePageState extends State<HomePage> {
                   } else {
                     var teacherDistance = await getDistance(
                         attendance.localizationX, attendance.localizationY);
-                    if (teacherDistance <= 7) {
+                    print(teacherDistance);
+                    if (teacherDistance <= 10) {
                       http.post(
                           Uri(
                               scheme: ChamadaInteligenteAPI.scheme,

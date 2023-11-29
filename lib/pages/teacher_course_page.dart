@@ -74,7 +74,9 @@ class _TeacherCoursePageState extends State<TeacherCoursePage> {
       final response2Json = await response2.stream.bytesToString();
       for (var j2 in jsonDecode(response2Json)){
         totalAttendances++;
-        studentAttendanceList.add(j2);
+        if (j2["status"] == 'p'){
+          studentAttendanceList.add(j2);
+        }
       }
       attendanceList.add([attendanceModel, studentList.length, studentAttendanceList.length]);
     }
